@@ -8,8 +8,24 @@ public class chzzkSwift {
         print("chzzkSwift initialized")
     }
 
+    public func search(query: String) {
 
-    public func chzzkAPI() -> ChzzkAPI {
-        return ChzzkAPI()
     }
+
+    public func play() {
+
+    }
+
+    public func chat() {
+
+    }
+
+    public func subscription() {
+
+    }
+
+    public func profile() {
+
+    }
+
 }
