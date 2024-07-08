@@ -1,9 +1,6 @@
 import Alamofire
 import Foundation
 
-import Alamofire
-import Foundation
-
 protocol APIEndpoint {
     var baseURL: String { get }
     var path: String { get }

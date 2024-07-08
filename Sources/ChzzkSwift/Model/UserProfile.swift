@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by 승재 on 7/8/24.
-//
-
 import Foundation
 
 struct UserProfileResponse: Decodable {

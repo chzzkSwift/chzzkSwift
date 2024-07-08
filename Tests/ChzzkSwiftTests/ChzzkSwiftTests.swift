@@ -1,7 +1,5 @@
 import XCTest
 @testable import chzzkSwift
-import XCTest
-@testable import chzzkSwift
 
 final class ChzzkSwiftTests: XCTestCase {
     var chzzkSwift: ChzzkSwift!
