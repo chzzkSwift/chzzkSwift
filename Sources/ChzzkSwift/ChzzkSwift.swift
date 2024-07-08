@@ -1,31 +1,23 @@
-// The Swift Programming Language
-// https://docs.swift.org/swift-book
 import Alamofire
 import Starscream
 
-public class chzzkSwift {
-    public init() {
+public class ChzzkSwift {
+    private let apiClient: APIClient
+    
+    public init(apiClient: APIClient = APIClient.shared) {
+        self.apiClient = apiClient
         print("chzzkSwift initialized")
     }
 
-    public func search(query: String) {
-
+    public func getRecommendationChannels() {
+        let endpoint = ChzzkAPI.getRecommendationChannels
+        apiClient.request(endpoint: endpoint) { (result: Result<RecommendationResponse, AFError>) in
+            switch result {
+            case .success(let data):
+                print("Recommendation Channels: \(data)")
+            case .failure(let error):
+                print("Error: \(error)")
+            }
+        }
     }
-
-    public func play() {
-
-    }
-
-    public func chat() {
-
-    }
-
-    public func subscription() {
-
-    }
-
-    public func profile() {
-
-    }
-
 }
