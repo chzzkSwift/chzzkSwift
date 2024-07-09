@@ -21,7 +21,7 @@ enum ChzzkAPI: APIEndpoint {
     case getLiveStatus(channelId: String)
     case getVideoHLSAddress(channelId: String)
     case getHLSRequest(url: String)
-    
+
     var baseURL: String {
         switch self {
         case .getUserStatus:
@@ -30,7 +30,7 @@ enum ChzzkAPI: APIEndpoint {
             return "https://api.chzzk.naver.com"
         }
     }
-    
+
     var path: String {
         switch self {
         case .getRecommendationChannels:
@@ -47,37 +47,37 @@ enum ChzzkAPI: APIEndpoint {
             return "/service/v1/search/channels"
         case .getChatUserInfo:
             return "/v1.1/chat-user-info"
-        case .getLiveStatus(let channelId):
+        case let .getLiveStatus(channelId):
             return "/polling/v3/channels/\(channelId)/live-status"
-        case .getVideoHLSAddress(let channelId):
+        case let .getVideoHLSAddress(channelId):
             return "/service/v3/channels/\(channelId)/live-detail"
-        case .getHLSRequest(let url):
+        case let .getHLSRequest(url):
             return url
         }
     }
-    
+
     var method: HTTPMethod {
         return .get
     }
-    
+
     var headers: HTTPHeaders? {
         return [
             "User-Agent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36",
             "Content-Type": "application/json",
-            "Accept": "application/json"
+            "Accept": "application/json",
         ]
     }
-    
+
     var parameters: Parameters? {
         switch self {
-        case .getRecommendedLiveBroadcasts(let deviceType):
+        case let .getRecommendedLiveBroadcasts(deviceType):
             return ["deviceType": deviceType]
-        case .searchChannels(let keyword, let offset, let size, let withFirstChannelContent):
+        case let .searchChannels(keyword, offset, size, withFirstChannelContent):
             return [
-                "keyword": keyword,
-                "offset": offset,
-                "size": size,
-                "withFirstChannelContent": withFirstChannelContent
+                "keyword": keyword, //검색어
+                "offset": offset, //페이지
+                "size": size, //한번에 보여줄 채널 수
+                "withFirstChannelContent": withFirstChannelContent, //첫 채널이 영상 컨텐츠를 보여 줄지 여부
             ]
         default:
             return nil

@@ -12,20 +12,27 @@ struct SearchContent: Decodable {
     let data: [SearchData]
 }
 
+// MARK: - 좀 더 알아봐야하는 부분
+
 struct Page: Decodable {
     let next: Next
 }
 
 struct Next: Decodable {
-    let offset: Int
+    // 기본적으로 offset은 한번에 13식 증가함. 즉, 한페이지에 채널 13개씩 보여줌
+    // 사이즈 부분을 건들면 한페이지에 보여지는 채널수를 조절할 수 있음
+    // 이에 따라 offset값도 바뀜
+    let offset: Int //다음 페이지를 나타낼때 쓰임
 }
 
-struct SearchData: Decodable {
+// MARK: - public section
+
+public struct SearchData: Decodable {
     let channel: Channel
     let content: Content?
 }
 
-struct Channel: Codable {
+public struct Channel: Codable {
     let channelId: String
     let channelName: String
     let channelImageUrl: String?
@@ -35,12 +42,12 @@ struct Channel: Codable {
     let openLive: Bool?
 }
 
-struct Content: Decodable {
+public struct Content: Decodable {
     let live: Live?
     let videos: [Video]?
 }
 
-struct Live: Decodable {
+public struct Live: Decodable {
     let liveTitle: String
     let liveImageUrl: String
     let defaultThumbnailImageUrl: String?
@@ -59,7 +66,7 @@ struct Live: Decodable {
     let blindType: String?
 }
 
-struct Video: Decodable {
+public struct Video: Decodable {
     let videoNo: Int
     let videoId: String?
     let videoTitle: String

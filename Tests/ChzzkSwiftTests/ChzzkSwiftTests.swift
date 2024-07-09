@@ -1,28 +1,30 @@
-import XCTest
 @testable import chzzkSwift
+import XCTest
 
 final class ChzzkSwiftTests: XCTestCase {
     var chzzkSwift: ChzzkSwift!
-    
+
     override func setUp() {
         super.setUp()
         chzzkSwift = ChzzkSwift()
     }
-    
+
     override func tearDown() {
         chzzkSwift = nil
         super.tearDown()
     }
-    
-    func testSearch() {
-        let expectation = self.expectation(description: "Search API Call")
-        
-        chzzkSwift.getRecommendationChannels()
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-            expectation.fulfill()
-        }
-        
-        waitForExpectations(timeout: 10, handler: nil)
+
+    func testRecommendationChannels() async throws {
+        let res = try await chzzkSwift.getRecommendationChannels()
+
+        XCTAssert(res.count > 0)
+    }
+
+    func testSearch() async throws {
+        let res = try await chzzkSwift.searchChannels("랄로")
+
+        XCTAssert(res.count > 0)
+        print("res count: \(res.count)")
+        XCTAssertEqual(res[0].channel.channelName, "랄로")
     }
 }
