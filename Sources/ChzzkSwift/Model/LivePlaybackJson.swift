@@ -106,6 +106,7 @@ struct EncodingTrack: Codable {
 
 struct Thumbnail: Codable {
     let snapshotThumbnailTemplate: String
+    let timeMachineThumbnailTemplate: String?
     let types: [String]
 }
 
