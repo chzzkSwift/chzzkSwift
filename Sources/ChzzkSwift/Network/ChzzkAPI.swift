@@ -21,10 +21,11 @@ enum ChzzkAPI: APIEndpoint {
     case getLiveStatus(channelId: String)
     case getVideoHLSAddress(channelId: String)
     case getHLSRequest(url: String)
-
+    case getChatAccessToken(chatChannelId: String)
     var baseURL: String {
         switch self {
-        case .getUserStatus:
+        case .getUserStatus,
+             .getChatAccessToken:
             return "https://comm-api.game.naver.com"
         default:
             return "https://api.chzzk.naver.com"
@@ -53,6 +54,8 @@ enum ChzzkAPI: APIEndpoint {
             return "/service/v3/channels/\(channelId)/live-detail"
         case let .getHLSRequest(url):
             return url
+        case let .getChatAccessToken(chatChannelId):
+            return "/v1/chats/access-token?channelId=\(chatChannelId)&chatType=STREAMING"
         }
     }
 
