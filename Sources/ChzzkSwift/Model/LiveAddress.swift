@@ -11,7 +11,7 @@ public struct LiveAddressContent: Decodable {
     let liveTitle: String
     let status: String
     let liveImageUrl: String
-    let defaultThumbnailImageUrl: String
+    let defaultThumbnailImageUrl: String?
     let concurrentUserCount: Int
     let accumulateCount: Int
     let openDate: String

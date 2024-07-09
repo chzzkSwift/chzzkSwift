@@ -37,7 +37,21 @@ final class ChzzkSwiftTests: XCTestCase {
     }
     
     func testgetLiveAddress() async throws {
-        let res = try await chzzkSwift.getLiveAddress(channelId: "f8e509c0c904c28913e1bd74a71dcb1f")
-        print(res.decodeLivePlaybackJson())
+        
+        let dummy = try! await chzzkSwift.getRecommendationChannels().first
+
+        guard let data = dummy else {
+            XCTFail("data is nil")
+            return
+        }
+
+        if(!data.streamer.openLive)
+        {
+            XCTFail("Streamer is not live")
+            return
+        }
+        
+        let res = try await chzzkSwift.getLiveAddress(channelId: "\(data.channelId)")
+        print(res)
     }
 }
