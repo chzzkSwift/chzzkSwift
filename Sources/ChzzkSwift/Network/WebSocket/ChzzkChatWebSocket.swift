@@ -97,6 +97,7 @@ public final class ChzzkChatWebSocket: WebSocketDelegate {
         case .disconnected(let reason, let code):
             isConnected = false
             print("WebSocket disconnected: \(reason) with code: \(code)")
+            reconnect()
         case .text(let string):
 //            print("Received text: \(string)")
             handleMessage(string: string)
