@@ -80,4 +80,46 @@ public class ChzzkSwift {
             }
         }
     }
+    public func getLiveStatus(_ channelId: String) async throws -> LiveStatus {
+        let endpoint: ChzzkAPI = ChzzkAPI.getLiveStatus(channelId: channelId)
+        return try await withCheckedThrowingContinuation { continuation in
+            apiClient.request(endpoint: endpoint) { (result: Result<LiveStatusResponse, AFError>) in
+                switch result {
+                case let .success(data):
+                    if data.code != 200 {
+                        continuation.resume(throwing: ChzzkError.error(code: data.code, message: data.message!))
+                    }
+                    continuation.resume(returning: data.content)
+                case let .failure(error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+  
+/*
+    public func getChatAccessToken(_ chatChannelId: String) async throws {
+        let endpoint: ChzzkAPI = ChzzkAPI.getChatAccessToken(chatChannelId: chatChannelId)
+        return try await withCheckedThrowingContinuation { continuation in
+            apiClient.request(endpoint: endpoint) { (result: Result<ChatAccessTokenResponse, AFError>) in
+                switch result {
+                case let .success(data):
+                    if data.code != 200 {
+                        continuation.resume(throwing: ChzzkError.error(code: data.code, message: data.message!))
+                    }
+                    continuation.resume(returning: data.content.accessToken)
+                case let .failure(error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+
+    }*/
+
+    public func connectChat(_ chatChannelId: String) {
+        let websocket = ChzzkChatWebSocket(chatChannelId: chatChannelId)
+
+        websocket.connect()
+
+    }
 }

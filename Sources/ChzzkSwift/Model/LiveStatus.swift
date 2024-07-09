@@ -6,7 +6,7 @@ struct LiveStatusResponse: Codable {
     let content: LiveStatus
 }
 
-struct LiveStatus: Codable {
+public struct LiveStatus: Codable {
     let liveTitle: String
     let status: String
     let concurrentUserCount: Int
