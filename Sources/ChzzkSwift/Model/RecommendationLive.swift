@@ -10,7 +10,7 @@ struct LiveContent: Decodable {
     let topRecommendedLives: [LiveChannel]
 }
 
-struct LiveChannel: Decodable {
+public struct LiveChannel: Decodable {
     let liveId: Int
     let liveTitle: String
     let liveImageUrl: String
@@ -23,6 +23,16 @@ struct LiveChannel: Decodable {
     let livePlaybackJson: String
     let channel: LiveChannelInfo
     let livePollingStatusJson: String
+    
+    func decodeLivePlaybackJson() -> LivePlaybackJson? {
+        do {
+            let decodedData = try JSONDecoder().decode(LivePlaybackJson.self, from: self.livePlaybackJson.data(using: .utf8)!)
+            return decodedData
+        } catch {
+            print("Failed to decode JSON: \(error)")
+        }
+        return nil
+    }
 }
 
 struct LiveChannelInfo: Decodable {

@@ -27,4 +27,10 @@ final class ChzzkSwiftTests: XCTestCase {
         print("res count: \(res.count)")
         XCTAssertEqual(res[0].channel.channelName, "랄로")
     }
+    
+    func testRecommendedLiveBroadcasts() async throws {
+        let res = try await chzzkSwift.getRecommendedLiveBroadcasts(deviceType: "PC")
+        
+        print("res liveplaybackJson -> \(res[0].decodeLivePlaybackJson()!)")
+    }
 }

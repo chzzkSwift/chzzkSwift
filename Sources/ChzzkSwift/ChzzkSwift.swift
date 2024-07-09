@@ -43,4 +43,23 @@ public class ChzzkSwift {
             }
         }
     }
+    
+    public func getRecommendedLiveBroadcasts(deviceType: String) async throws -> [LiveChannel] {
+        let endpoint = ChzzkAPI.getRecommendedLiveBroadcasts(deviceType: deviceType)
+        
+        return try await withCheckedThrowingContinuation { continuation in
+            apiClient.request(endpoint: endpoint) { (result: Result<LiveResponse, AFError>) in
+                switch result {
+                case let .success(data):
+                    if data.code != 200 {
+                        continuation.resume(throwing: ChzzkError.error(code: data.code, message: data.message!))
+                    } else {
+                        continuation.resume(returning: data.content.topRecommendedLives)
+                    }
+                case let .failure(error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
 }
