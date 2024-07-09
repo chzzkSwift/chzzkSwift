@@ -33,7 +33,12 @@ final class ChzzkWebsocketTests: XCTestCase {
         print(liveStatus.liveTitle)
         
         print(liveStatus.chatChannelId)
-        await chzzkSwift.connectChat(liveStatus.chatChannelId)
-        await waitForExpectations(timeout: 3600)
+        await chzzkSwift.connectChat(liveStatus.chatChannelId!)
+        // 일정 시간 동안 대기하여 메시지 수신 확인
+       let expectation = self.expectation(description: "Waiting for messages")
+       DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
+           expectation.fulfill()
+       }
+        await waitForExpectations(timeout: 300, handler: nil)
     }
 }

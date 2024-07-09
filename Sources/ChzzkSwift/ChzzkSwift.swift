@@ -1,4 +1,5 @@
 import Alamofire
+import Foundation
 import Starscream
 
 @available(macOS 10.15, *)
@@ -120,6 +121,5 @@ public class ChzzkSwift {
         let websocket = ChzzkChatWebSocket(chatChannelId: chatChannelId)
 
         await websocket.connect()
-
     }
 }

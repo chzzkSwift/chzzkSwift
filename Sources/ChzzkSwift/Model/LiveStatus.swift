@@ -15,9 +15,9 @@ public struct LiveStatus: Codable {
     let adult: Bool
     let krOnlyViewing: Bool
     let clipActive: Bool
-    let chatChannelId: String
+    let chatChannelId: String?
     let tags: [String]
-    let categoryType: String
+    let categoryType: String?
     let liveCategory: String
     let liveCategoryValue: String
     let livePollingStatusJson: String
