@@ -10,20 +10,22 @@ struct RecommendationContent: Decodable {
     let recommendationChannels: [RecommendationChannel]
 }
 
-struct RecommendationChannel: Decodable {
+struct Streamer: Decodable {
+    let openLive: Bool
+}
+
+// MARK: - public section
+
+public struct LiveInfo: Decodable {
+    let liveTitle: String
+    let concurrentUserCount: Int
+    let liveCategoryValue: String
+}
+
+public struct RecommendationChannel: Decodable {
     let channelId: String
     let channel: Channel
     let streamer: Streamer
     let liveInfo: LiveInfo
     let contentLineage: String
-}
-
-struct Streamer: Decodable {
-    let openLive: Bool
-}
-
-struct LiveInfo: Decodable {
-    let liveTitle: String
-    let concurrentUserCount: Int
-    let liveCategoryValue: String
 }
