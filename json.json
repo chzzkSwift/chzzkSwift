@@ -1,0 +1,12 @@
+{
+  "bdy": {
+    "accTkn": "zA8h0nKyo+7g2uS3208qUyvptmmlPcaRNJd0JNAiX9GBy2WUYTaMTvu21G8wi4BQ",
+    "devType": 2001,
+    "auth": "READ"
+  },
+  "cmd": 100,
+  "cid": "N1IABh",
+  "svcid": "chat",
+  "ver": "1.0",
+  "tid": 1
+}

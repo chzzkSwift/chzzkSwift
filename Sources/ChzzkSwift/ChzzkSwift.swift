@@ -96,9 +96,9 @@ public class ChzzkSwift {
             }
         }
     }
-  
-/*
-    public func getChatAccessToken(_ chatChannelId: String) async throws {
+
+
+    public func getChatAccessToken(_ chatChannelId: String) async throws -> String {
         let endpoint: ChzzkAPI = ChzzkAPI.getChatAccessToken(chatChannelId: chatChannelId)
         return try await withCheckedThrowingContinuation { continuation in
             apiClient.request(endpoint: endpoint) { (result: Result<ChatAccessTokenResponse, AFError>) in
@@ -114,12 +114,12 @@ public class ChzzkSwift {
             }
         }
 
-    }*/
+    }
 
-    public func connectChat(_ chatChannelId: String) {
+    public func connectChat(_ chatChannelId: String) async {
         let websocket = ChzzkChatWebSocket(chatChannelId: chatChannelId)
 
-        websocket.connect()
+        await websocket.connect()
 
     }
 }
