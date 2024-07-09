@@ -32,5 +32,26 @@ final class ChzzkSwiftTests: XCTestCase {
         let res = try await chzzkSwift.getRecommendedLiveBroadcasts(deviceType: "PC")
         
         print("res liveplaybackJson -> \(res[0].decodeLivePlaybackJson()!)")
+        
+        XCTAssert(res.count > 0)
+    }
+    
+    func testgetLiveAddress() async throws {
+        
+        let dummy = try! await chzzkSwift.getRecommendationChannels().first
+
+        guard let data = dummy else {
+            XCTFail("data is nil")
+            return
+        }
+
+        if(!data.streamer.openLive)
+        {
+            XCTFail("Streamer is not live")
+            return
+        }
+        
+        let res = try await chzzkSwift.getLiveAddress(channelId: "\(data.channelId)")
+        print(res)
     }
 }

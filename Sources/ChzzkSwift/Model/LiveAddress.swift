@@ -1,17 +1,17 @@
 import Foundation
 
-struct LiveAddressResponse: Codable {
+struct LiveAddressResponse: Decodable {
     let code: Int
     let message: String?
     let content: LiveAddressContent
 }
 
-struct LiveAddressContent: Codable {
+public struct LiveAddressContent: Decodable {
     let liveId: Int
     let liveTitle: String
     let status: String
     let liveImageUrl: String
-    let defaultThumbnailImageUrl: String
+    let defaultThumbnailImageUrl: String?
     let concurrentUserCount: Int
     let accumulateCount: Int
     let openDate: String
@@ -28,7 +28,7 @@ struct LiveAddressContent: Codable {
     let paidPromotion: Bool
     let chatAvailableCondition: String
     let minFollowerMinute: Int
-    let livePlaybackJson: String // m3u8 다운받는 링크 파싱 필요
+    let livePlaybackJson: String
     let p2pQuality: [String]
     let channel: Channel
     let livePollingStatusJson: String
@@ -36,6 +36,15 @@ struct LiveAddressContent: Codable {
     let blindType: String?
     let chatDonationRankingExposure: Bool
     let adParameter: AdParameter
+    func decodeLivePlaybackJson() -> LivePlaybackJson? {
+        do {
+            let decodedData = try JSONDecoder().decode(LivePlaybackJson.self, from: self.livePlaybackJson.data(using: .utf8)!)
+            return decodedData
+        } catch {
+            print("Failed to decode JSON: \(error)")
+        }
+        return nil
+    }
 }
 
 struct AdParameter: Codable {
