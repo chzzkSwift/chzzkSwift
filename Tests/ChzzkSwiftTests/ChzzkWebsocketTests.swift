@@ -33,7 +33,7 @@ final class ChzzkWebsocketTests: XCTestCase {
         print(liveStatus.liveTitle)
         
         print(liveStatus.chatChannelId)
-        chzzkSwift.connectChat(liveStatus.chatChannelId)
-        XCTAssert(true)
+        await chzzkSwift.connectChat(liveStatus.chatChannelId)
+        await waitForExpectations(timeout: 3600)
     }
 }

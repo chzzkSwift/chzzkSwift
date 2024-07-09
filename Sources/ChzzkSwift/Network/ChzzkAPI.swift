@@ -55,7 +55,7 @@ enum ChzzkAPI: APIEndpoint {
         case let .getHLSRequest(url):
             return url
         case let .getChatAccessToken(chatChannelId):
-            return "/v1/chats/access-token?channelId=\(chatChannelId)&chatType=STREAMING"
+            return "/nng_main/v1/chats/access-token?channelId=\(chatChannelId)&chatType=STREAMING"
         }
     }
 
