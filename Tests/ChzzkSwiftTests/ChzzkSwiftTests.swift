@@ -32,5 +32,12 @@ final class ChzzkSwiftTests: XCTestCase {
         let res = try await chzzkSwift.getRecommendedLiveBroadcasts(deviceType: "PC")
         
         print("res liveplaybackJson -> \(res[0].decodeLivePlaybackJson()!)")
+        
+        XCTAssert(res.count > 0)
+    }
+    
+    func testgetLiveAddress() async throws {
+        let res = try await chzzkSwift.getLiveAddress(channelId: "f8e509c0c904c28913e1bd74a71dcb1f")
+        print(res.decodeLivePlaybackJson())
     }
 }

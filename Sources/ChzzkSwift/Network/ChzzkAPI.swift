@@ -19,7 +19,7 @@ enum ChzzkAPI: APIEndpoint {
     case searchChannels(keyword: String, offset: Int, size: Int, withFirstChannelContent: Bool)
     case getChatUserInfo
     case getLiveStatus(channelId: String)
-    case getVideoHLSAddress(channelId: String)
+    case getLiveAddress(channelId: String)
     case getHLSRequest(url: String)
 
     var baseURL: String {
@@ -49,7 +49,7 @@ enum ChzzkAPI: APIEndpoint {
             return "/v1.1/chat-user-info"
         case let .getLiveStatus(channelId):
             return "/polling/v3/channels/\(channelId)/live-status"
-        case let .getVideoHLSAddress(channelId):
+        case let .getLiveAddress(channelId):
             return "/service/v3/channels/\(channelId)/live-detail"
         case let .getHLSRequest(url):
             return url

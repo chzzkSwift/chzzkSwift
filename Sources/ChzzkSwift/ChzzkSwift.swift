@@ -62,4 +62,22 @@ public class ChzzkSwift {
             }
         }
     }
+    
+    public func getLiveAddress(channelId: String) async throws -> LiveAddressContent {
+        let endpoint = ChzzkAPI.getLiveAddress(channelId: channelId)
+        return try await withCheckedThrowingContinuation { continuation in
+            apiClient.request(endpoint: endpoint) { (result: Result<LiveAddressResponse, AFError>) in
+                switch result {
+                case let .success(data):
+                    if data.code != 200 {
+                        continuation.resume(throwing: ChzzkError.error(code: data.code, message: data.message!))
+                    } else {
+                        continuation.resume(returning: data.content)
+                    }
+                case let .failure(error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
 }
