@@ -10,36 +10,32 @@ public protocol ChzzkMessageBodyProtocol: Codable, CustomStringConvertible {
     func getData() -> Data
 
     var ver: String { get }
-    var tid: Int { get }
+    var cmd: ChzzkChatCmd { get }
 }
+
+// MARK: - Chzzk Chat Messages
 
 public struct ChzzkInitialConnectMessage: ChzzkMessageBodyProtocol {
     public init(chatChannelId: String, accessToken: String, uid: String?) {
         svcid = "game"
         cid = chatChannelId
-        bdy = ChzzkBdy(accTkn: accessToken, auth: nil, uid: uid)
-        cmd = ChzzkChatCmd.connect
+        bdy = ChzzkInitialBdy(accTkn: accessToken, auth: nil, uid: uid)
+        tid = 1
     }
 
     public var ver: String = "3"
-    public var tid: Int = 1
+    public var cmd: ChzzkChatCmd = .connect
+    let tid: Int
     let svcid: String
     let cid: String
-    let bdy: ChzzkBdy
-    let cmd: ChzzkChatCmd
+    let bdy: ChzzkInitialBdy
 
     public var description: String {
-        let encoder = JSONEncoder()
-        #if DEBUG
-            encoder.outputFormatting = .prettyPrinted
-        #endif
-        let data = try! encoder.encode(self)
-        return String(data: data, encoding: .utf8)!
+        return String(data: getData(), encoding: .utf8)!
     }
 
     public func getData() -> Data {
-        let encoder = JSONEncoder()
-        return try! encoder.encode(self)
+        return _encode(self)
     }
 }
 
@@ -48,52 +44,63 @@ public struct ChzzkRecentChatMessage: ChzzkMessageBodyProtocol {
         self.sid = sid
         cid = chatChannelId
         svcid = "game"
-        cmd = .requestRecentChat
         bdy = ["recentMessageCount": 50]
+        tid = 2
     }
 
     public var ver: String = "3"
-    public var tid: Int = 2
+    public var cmd: ChzzkChatCmd = .requestRecentChat
+    let tid: Int
     let cid: String
     let sid: String
     let svcid: String
-    let cmd: ChzzkChatCmd
     let bdy: [String: Int]
 
     public var description: String {
-        let encoder = JSONEncoder()
-        #if DEBUG
-            encoder.outputFormatting = .prettyPrinted
-        #endif
-        let data = try! encoder.encode(self)
-        return String(data: data, encoding: .utf8)!
+        return String(data: getData(), encoding: .utf8)!
     }
 
     public func getData() -> Data {
-        let encoder = JSONEncoder()
-        return try! encoder.encode(self)
+        return _encode(self)
+    }
+}
+
+public struct ChzzkPongMessage: ChzzkMessageBodyProtocol {
+    public init(_ ver: String = "3") {
+        self.ver = ver
+    }
+
+    public func getData() -> Data {
+        return _encode(self)
+    }
+
+    public var cmd: ChzzkChatCmd = .pong
+    public var ver: String
+    public var description: String {
+        return String(data: getData(), encoding: .utf8)!
     }
 }
 
 public struct ChzzkPingMessage: ChzzkMessageBodyProtocol {
-    public init(_ ver: String, _ tid: Int) {
+    init(_ ver: String = "3") {
         self.ver = ver
-        self.tid = tid
+        cmd = .ping
     }
 
     public func getData() -> Data {
-        let encoder = JSONEncoder()
-        return try! encoder.encode(self)
+        return _encode(self)
     }
 
     public var ver: String
-    public var tid: Int
+    public var cmd: ChzzkChatCmd
     public var description: String {
-        return "Ping"
+        return String(data: getData(), encoding: .utf8)!
     }
 }
 
-public struct ChzzkBdy: Codable {
+// MARK: - Chat Bdy
+
+public struct ChzzkInitialBdy: Codable {
     let accTkn: String
     let devType: Int
     let auth: String
@@ -105,7 +112,7 @@ public struct ChzzkBdy: Codable {
     init(accTkn: String, auth: String?, uid: String?) {
         self.accTkn = accTkn
         devType = 2001
-        self.auth = auth == nil ? "READ" : "WRITE" // TODO: Fix Later
+        self.auth = auth == nil ? "READ" : "WRITE"
         self.uid = uid ?? "null"
         libVer = "4.9.3"
         osVer = "macOS/10.15.7"
@@ -113,6 +120,8 @@ public struct ChzzkBdy: Codable {
         timezone = "Asia/Seoul"
     }
 }
+
+// MARK: - Chat Enums
 
 public enum ChzzkChatCmd: Int, Codable {
     case ping = 0
@@ -141,4 +150,14 @@ public enum ChzzkChatType: Int {
     case donation = 10
     case subscription = 11
     case systemMessage = 30
+}
+
+// MARK: - Chat Simple Utils
+
+private func _encode<T: Encodable>(_ value: T) -> Data {
+    let encoder = JSONEncoder()
+    #if DEBUG
+        encoder.outputFormatting = .prettyPrinted
+    #endif
+    return try! encoder.encode(value)
 }
