@@ -16,7 +16,7 @@ final class ChzzkSwiftTests: XCTestCase {
 
     func testRecommendationChannels() async throws {
         let res = try await chzzkSwift.getRecommendationChannels()
-
+        print(res)
         XCTAssert(res.count > 0)
     }
 
@@ -24,6 +24,7 @@ final class ChzzkSwiftTests: XCTestCase {
         let res = try await chzzkSwift.searchChannels("랄로")
 
         XCTAssert(res.count > 0)
+        print(res)
         print("res count: \(res.count)")
         XCTAssertEqual(res[0].channel.channelName, "랄로")
     }
@@ -31,7 +32,7 @@ final class ChzzkSwiftTests: XCTestCase {
     func testRecommendedLiveBroadcasts() async throws {
         let res = try await chzzkSwift.getRecommendedLiveBroadcasts(deviceType: "PC")
         
-        print("res liveplaybackJson -> \(res[0].decodeLivePlaybackJson()!)")
+        print("res liveplaybackJson -> \(res[0]!.decodeLivePlaybackJson()!)")
         
         XCTAssert(res.count > 0)
     }

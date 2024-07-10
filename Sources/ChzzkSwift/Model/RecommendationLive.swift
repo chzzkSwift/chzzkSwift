@@ -7,7 +7,7 @@ struct LiveResponse: Decodable {
 }
 
 struct LiveContent: Decodable {
-    let topRecommendedLives: [LiveChannel]
+    let topRecommendedLives: [LiveChannel?]
 }
 
 public struct LiveChannel: Decodable {

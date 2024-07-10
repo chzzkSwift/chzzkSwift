@@ -35,26 +35,29 @@ public final class ChzzkChatWebSocket: WebSocketDelegate {
         print(url)
         var request = URLRequest(url: url)
         request.timeoutInterval = 5
-
+        
         socket = WebSocket(request: request)
         socket?.delegate = self
         socket?.connect()
         await sendInitialMessages()
-        requestRecentChat()
+        
+        // 타이머 ON
+        startPingTimer()
     }
 
     public func disconnect() {
         guard let socket = socket else { return }
         socket.disconnect()
         isConnected = false
+        stopPingTimer()
     }
 
     private func sendInitialMessages() async {
         do {
             let accessToken = try await chatAccessToken()
 
-//            let initialMessage = "{\"ver\":\"3\",\"cmd\":0}"
-//            sendSynchronousMessage(message: initialMessage)
+            let initialMessage = "{\"ver\":\"3\",\"cmd\":0}"
+            sendSynchronousMessage(message: initialMessage)
 
             let connectMessage = """
             {"ver":"3","cmd":100,"svcid":"game","cid":"\(chatChannelId)","bdy":{"uid":"\(uid ?? "null")","devType":2001,"accTkn":"\(accessToken)","auth":"READ","libVer":"4.9.3","osVer":"macOS/10.15.7","devName":"Google Chrome/126.0.0.0","locale":"ko","timezone":"Asia/Seoul"},"tid":1}
@@ -63,7 +66,7 @@ public final class ChzzkChatWebSocket: WebSocketDelegate {
             let connectMessageObj = ChzzkInitialConnectMessage(chatChannelId: chatChannelId, accessToken: accessToken, uid: uid)
 
             sendSynchronousMessage(message: connectMessage)
-
+                
         } catch {
             print("Error fetching access token: \(error)")
         }
@@ -87,7 +90,8 @@ public final class ChzzkChatWebSocket: WebSocketDelegate {
         socket?.write(data: message, completion: {
             dispatchGroup.leave()
         })
-
+        
+        if isConnected { startPingTimer() }
         dispatchGroup.wait()
     }
 
@@ -108,6 +112,7 @@ public final class ChzzkChatWebSocket: WebSocketDelegate {
             Task {
                 await sendInitialMessages()
             }
+            startPingTimer()  // 연결이 성공하면 핑 타이머 시작
         case let .disconnected(reason, code):
             isConnected = false
             print("WebSocket disconnected: \(reason) with code: \(code)")
@@ -168,6 +173,9 @@ public final class ChzzkChatWebSocket: WebSocketDelegate {
         switch cmd {
         case .pong: // PONG
             print("Received PONG")
+        case .ping:
+            print("Recieved PING")
+            sendPong()
         case .connected: // CONNECTED
             if let body = json["bdy"] as? [String: Any], let sid = body["sid"] as? String {
                 self.sid = sid
@@ -204,7 +212,7 @@ public final class ChzzkChatWebSocket: WebSocketDelegate {
     private func startPingTimer() {
         stopPingTimer()
         pingTimeoutId = DispatchSource.makeTimerSource()
-        pingTimeoutId?.schedule(deadline: .now() + 20.0, repeating: 20.0)
+        pingTimeoutId?.schedule(deadline: .now() + 10, repeating: 15.0)
         pingTimeoutId?.setEventHandler { [weak self] in
             self?.sendPing()
         }
@@ -217,11 +225,23 @@ public final class ChzzkChatWebSocket: WebSocketDelegate {
     }
 
     private func sendPing() {
+        print("Send PING")
         guard let socket = socket else { return }
-        let pingMessage = "{\"ver\":\"3\",\"cmd\":0}"
-        socket.write(string: pingMessage)
+        let pingMessage = ChzzkPingMessage("3", 0)
+        
+        let pingData = pingMessage.getData()
+        socket.write(ping: pingData)
     }
-
+    
+    private func sendPong() {
+        print("Send PONG")
+        guard let socket = socket else { return }
+        let pongMessage = ChzzkPingMessage("3", 10000)
+        
+        let pongData = pongMessage.getData()
+        socket.write(pong: pongData)
+    }
+    
     public func reconnect() {
         disconnect()
         Task {

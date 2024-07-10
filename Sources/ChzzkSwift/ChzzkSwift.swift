@@ -45,7 +45,7 @@ public class ChzzkSwift {
         }
     }
     
-    public func getRecommendedLiveBroadcasts(deviceType: String) async throws -> [LiveChannel] {
+    public func getRecommendedLiveBroadcasts(deviceType: String) async throws -> [LiveChannel?] {
         let endpoint = ChzzkAPI.getRecommendedLiveBroadcasts(deviceType: deviceType)
         
         return try await withCheckedThrowingContinuation { continuation in
