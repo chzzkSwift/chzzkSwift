@@ -41,8 +41,6 @@ public final class ChzzkChatWebSocket: WebSocketDelegate {
         socket?.connect()
         await sendInitialMessages()
 
-        // 타이머 ON
-        startPingTimer()
     }
 
     public func disconnect() {
@@ -55,12 +53,9 @@ public final class ChzzkChatWebSocket: WebSocketDelegate {
     private func sendInitialMessages() async {
         do {
             let accessToken = try await chatAccessToken()
-
             let initialMessage = ChzzkPingMessage()
             sendSynchronousMessage(message: initialMessage.getData())
-
             let connectMessage = ChzzkInitialConnectMessage(chatChannelId: chatChannelId, accessToken: accessToken, uid: uid)
-
             sendSynchronousMessage(message: connectMessage.getData())
 
         } catch {
@@ -76,17 +71,13 @@ public final class ChzzkChatWebSocket: WebSocketDelegate {
             dispatchGroup.leave()
         })
 
-        if isConnected { startPingTimer() }
         dispatchGroup.wait()
     }
 
     private func requestRecentChat() {
         guard let sid = sid else { return }
-
-        let recentChatMessage = """
-        {"ver":"3","cmd":5101,"svcid":"game","cid":"\(chatChannelId)","sid":"\(sid)","bdy":{"recentMessageCount":50},"tid":2}
-        """
-        socket?.write(string: recentChatMessage)
+        let recentChatMessage = ChzzkRecentChatMessage(chatChannelId: chatChannelId, sid: sid).getData()
+        socket?.write(data: recentChatMessage)
     }
 
     public func didReceive(event: WebSocketEvent, client _: WebSocketClient) {
@@ -103,7 +94,6 @@ public final class ChzzkChatWebSocket: WebSocketDelegate {
             print("WebSocket disconnected: \(reason) with code: \(code)")
             reconnect()
         case let .text(string):
-//            print("Received text: \(string)")
             handleMessage(string: string)
         case let .binary(data):
             print("Received data: \(data.count)")
@@ -168,8 +158,8 @@ public final class ChzzkChatWebSocket: WebSocketDelegate {
             }
         case .recentChat: // RECENT_CHAT
             print("Received recent chat messages")
-            if let body = json["bdy"] as? [String: Any], let messages = body["messageList"] as? [[String: Any]] {
-                handleChatMessages(messages)
+            if let body = json["bdy"] as? [String: Any] {
+                handleRecentChatMessages(body)
             }
         case .chat: // CHAT
             print("Received chat message")
@@ -179,7 +169,7 @@ public final class ChzzkChatWebSocket: WebSocketDelegate {
         case .donation:
             print("Received donation message")
             if let body = json["bdy"] as? [String: Any] {
-                print("Donation: \(body)")
+                handleDonationMessage(body)
             }
         default:
             print("Unknown command received: \(cmd)")
@@ -187,12 +177,41 @@ public final class ChzzkChatWebSocket: WebSocketDelegate {
     }
 
     private func handleChatMessages(_ messages: [[String: Any]]) {
-        for message in messages {
-            if let content = message["msg"] as? String {
-                print("Chat message: \(content)")
+        for messageData in messages {
+            do {
+                let jsonData = try JSONSerialization.data(withJSONObject: messageData)
+                let chatMessage = try JSONDecoder().decode(ChzzkChatMessage.self, from: jsonData)
+                let chzzkMessage = ChzzkMessage(fromChat: chatMessage)
+                print("Chat message: \(chzzkMessage)")
+            } catch {
+                print("Error parsing chat message: \(error)")
             }
         }
     }
+
+    private func handleDonationMessage(_ messageData: [String: Any]) {
+        do {
+            let jsonData = try JSONSerialization.data(withJSONObject: messageData)
+            let donationMessage = try JSONDecoder().decode(ChzzkDonationMessage.self, from: jsonData)
+            let chzzkMessage = ChzzkMessage(fromDonation: donationMessage)
+            print("Donation message: \(chzzkMessage)")
+        } catch {
+            print("Error parsing donation message: \(error)")
+        }
+    }
+    
+    private func handleRecentChatMessages(_ messageData: [String: Any]) {
+            do {
+                let jsonData = try JSONSerialization.data(withJSONObject: messageData)
+                let recentChatMessage = try JSONDecoder().decode(ChzzkNewRecentChatMessage.self, from: jsonData)
+                for message in recentChatMessage.messageList {
+                    let chzzkMessage = ChzzkMessage(fromRecentChat: message)
+                    print("Recent chat message: \(chzzkMessage)")
+                }
+            } catch {
+                print("Error parsing recent chat messages: \(error)")
+            }
+        }
 
     private func startPingTimer() {
         stopPingTimer()
