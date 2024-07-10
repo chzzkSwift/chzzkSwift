@@ -3,7 +3,6 @@ import Starscream
 
 @available(macOS 10.15, *)
 public final class ChzzkChatWebSocket: WebSocketDelegate {
-
     private var isConnected: Bool = false
     private let chatChannelId: String
     private var socket: WebSocket?
@@ -53,15 +52,18 @@ public final class ChzzkChatWebSocket: WebSocketDelegate {
     private func sendInitialMessages() async {
         do {
             let accessToken = try await chatAccessToken()
-            
+
 //            let initialMessage = "{\"ver\":\"3\",\"cmd\":0}"
 //            sendSynchronousMessage(message: initialMessage)
-            
+
             let connectMessage = """
             {"ver":"3","cmd":100,"svcid":"game","cid":"\(chatChannelId)","bdy":{"uid":"\(uid ?? "null")","devType":2001,"accTkn":"\(accessToken)","auth":"READ","libVer":"4.9.3","osVer":"macOS/10.15.7","devName":"Google Chrome/126.0.0.0","locale":"ko","timezone":"Asia/Seoul"},"tid":1}
             """
+
+            let connectMessageObj = ChzzkInitialConnectMessage(chatChannelId: chatChannelId, accessToken: accessToken, uid: uid)
+
             sendSynchronousMessage(message: connectMessage)
-            
+
         } catch {
             print("Error fetching access token: \(error)")
         }
@@ -70,13 +72,25 @@ public final class ChzzkChatWebSocket: WebSocketDelegate {
     private func sendSynchronousMessage(message: String) {
         let dispatchGroup = DispatchGroup()
         dispatchGroup.enter()
-        
+
         socket?.write(string: message, completion: {
             dispatchGroup.leave()
         })
-        
+
         dispatchGroup.wait()
     }
+
+    private func sendSynchronousMessage(message: Data) {
+        let dispatchGroup = DispatchGroup()
+        dispatchGroup.enter()
+
+        socket?.write(data: message, completion: {
+            dispatchGroup.leave()
+        })
+
+        dispatchGroup.wait()
+    }
+
     private func requestRecentChat() {
         guard let sid = sid else { return }
 
@@ -86,29 +100,29 @@ public final class ChzzkChatWebSocket: WebSocketDelegate {
         socket?.write(string: recentChatMessage)
     }
 
-    public func didReceive(event: WebSocketEvent, client: WebSocketClient) {
+    public func didReceive(event: WebSocketEvent, client _: WebSocketClient) {
         switch event {
-        case .connected(let headers):
+        case let .connected(headers):
             isConnected = true
             print("WebSocket connected with headers: \(headers)")
             Task {
                 await sendInitialMessages()
             }
-        case .disconnected(let reason, let code):
+        case let .disconnected(reason, code):
             isConnected = false
             print("WebSocket disconnected: \(reason) with code: \(code)")
             reconnect()
-        case .text(let string):
+        case let .text(string):
 //            print("Received text: \(string)")
             handleMessage(string: string)
-        case .binary(let data):
+        case let .binary(data):
             print("Received data: \(data.count)")
             handleMessage(data: data)
-        case .ping(_):
+        case .ping:
             print("Ping received")
-        case .pong(_):
+        case .pong:
             print("Pong received")
-        case .viabilityChanged(let viable):
+        case let .viabilityChanged(viable):
             print("Viability changed: \(viable)")
             if !viable {
                 reconnect()
@@ -119,7 +133,7 @@ public final class ChzzkChatWebSocket: WebSocketDelegate {
         case .cancelled:
             isConnected = false
             print("WebSocket cancelled")
-        case .error(let error):
+        case let .error(error):
             isConnected = false
             if let error = error {
                 print("WebSocket error: \(error.localizedDescription)")
@@ -150,25 +164,29 @@ public final class ChzzkChatWebSocket: WebSocketDelegate {
     }
 
     private func handleJSONMessage(_ json: [String: Any]) {
-        guard let cmd = json["cmd"] as? Int else { return }
-
+        guard let cmdValue = json["cmd"] as? Int, let cmd = ChzzkChatCmd(rawValue: cmdValue) else { return }
         switch cmd {
-        case 10000: // PONG
+        case .pong: // PONG
             print("Received PONG")
-        case 10100: // CONNECTED
+        case .connected: // CONNECTED
             if let body = json["bdy"] as? [String: Any], let sid = body["sid"] as? String {
                 self.sid = sid
                 requestRecentChat()
             }
-        case 15101: // RECENT_CHAT
+        case .recentChat: // RECENT_CHAT
             print("Received recent chat messages")
             if let body = json["bdy"] as? [String: Any], let messages = body["messageList"] as? [[String: Any]] {
                 handleChatMessages(messages)
             }
-        case 93101: // CHAT
+        case .chat: // CHAT
             print("Received chat message")
             if let body = json["bdy"] as? [[String: Any]] {
                 handleChatMessages(body)
+            }
+        case .donation:
+            print("Received donation message")
+            if let body = json["bdy"] as? [String: Any] {
+                print("Donation: \(body)")
             }
         default:
             print("Unknown command received: \(cmd)")
